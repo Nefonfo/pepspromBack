@@ -5,6 +5,7 @@ import { Model, Schema } from 'mongoose';
 import { StorageInfo } from '../../interface/storage-info.interface';
 import { FindAsDto } from '../../dtos/find-as.dto';
 import { SheetStorage } from '../../interface/sheet-storage.interface';
+import { NewStorageInfoRegisterDto } from 'src/dtos/new-storage-info-register.dto';
 
 @Injectable()
 export class StorageInfoService {
@@ -21,7 +22,7 @@ export class StorageInfoService {
         return await this.externalSheetStorageService.findAs(data);
     }
 
-    async createStorageInfo(newStorageInfo: StorageInfo, idSheetRef: Schema.Types.ObjectId): Promise<StorageInfo>{
+    async createStorageInfo(newStorageInfo: NewStorageInfoRegisterDto, idSheetRef: Schema.Types.ObjectId): Promise<StorageInfo>{
         const newStorage = new this.storageInfoModel(newStorageInfo);
         const savedStorage = await newStorage.save();
         const ref = await this.externalSheetStorageService.addStorageInfo(idSheetRef, savedStorage.id);

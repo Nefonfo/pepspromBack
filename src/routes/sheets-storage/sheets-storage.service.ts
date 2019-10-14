@@ -25,6 +25,12 @@ export class SheetsStorageService {
     async findOneAs(data: FindAsDto): Promise<SheetStorage>{
         return await this.sheetStorageModel.findOne({[data.fieldName]: data.data}).exec();
     }
+    async findOneAsAndPopulateInfo(data: FindAsDto): Promise<SheetStorage>{
+        return await this.sheetStorageModel.findOne({[data.fieldName]: data.data}).populate({
+            path: 'info',
+            options: { sort: { timestamp: -1 }},
+        }).exec();
+    }
 
     async findAs(data: FindAsDto): Promise<SheetStorage[]>{
         return await this.sheetStorageModel.find({[data.fieldName]: data.data}).exec();

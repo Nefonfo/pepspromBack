@@ -4,6 +4,7 @@ export interface StorageInfo extends Document{
     quantity: number;
     unitCost: number;
     type: string;
+    existence: number;
     balance: Balance;
 }
 

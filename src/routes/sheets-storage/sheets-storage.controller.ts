@@ -13,7 +13,7 @@ export class SheetsStorageController {
     @Get('all')
     async findAll(@Res() response: Response) {
         const result = await this.SheetStorageService.findAll();
-        return response.status(HttpStatus.FOUND).json(result);
+        return response.status(HttpStatus.OK).json(result);
     }
 
     @Post('new')
@@ -28,6 +28,6 @@ export class SheetsStorageController {
     @UsePipes(new ValidationPipe())
     async findOneQuery(@Query() query: FindAsDto, @Res() response: Response) {
         const userFind = await this.SheetStorageService.findOneAs(query);
-        return response.status(HttpStatus.FOUND).json(userFind);
+        return response.status(HttpStatus.OK).json(userFind);
     }
 }

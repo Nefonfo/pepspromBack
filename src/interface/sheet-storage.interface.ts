@@ -1,7 +1,7 @@
 import { Document, Schema } from 'mongoose';
-enum types {
-    'PEPS',
-    'COSTO PROMEDIO',
+const enum types {
+    PEPS = 'PEPS',
+    COSTOPROMEDIO = 'COSTO PROMEDIO',
 }
 export interface SheetStorage extends Document {
     name: string;

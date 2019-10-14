@@ -3,7 +3,7 @@ import { NumberOrStringOrObjectId } from '../validators/numberOrStringOrObjectId
 import { Types } from 'mongoose';
 
 enum queries {
-    'name', 'type', 'operation', 'quantity', 'unitCost', 'balance',
+    'name', 'type', 'operation', 'quantity', 'unitCost', 'balance', '_id'
 }
 
 export class FindAsDto {

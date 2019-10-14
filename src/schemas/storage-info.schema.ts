@@ -22,6 +22,10 @@ export const StorageInfoSchema: Schema = new Schema({
         enum: types,
         required: true,
     },
+    existence: {
+        type: Number,
+        required: true,
+    },
     balance: {
         quantity: Number,
         unitCost: Number,
