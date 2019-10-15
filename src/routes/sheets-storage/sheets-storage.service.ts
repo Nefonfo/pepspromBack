@@ -28,8 +28,18 @@ export class SheetsStorageService {
     async findOneAsAndPopulateInfo(data: FindAsDto): Promise<SheetStorage>{
         return await this.sheetStorageModel.findOne({[data.fieldName]: data.data}).populate({
             path: 'info',
-            options: { sort: { timestamp: -1 }},
+            options: { sort: { createdAt: -1 }},
         }).exec();
+    }
+
+    async findOneWherePopulateInfo(data: FindAsDto, data2: FindAsDto): Promise<SheetStorage>{
+        const result = await this.sheetStorageModel.findOne({[data.fieldName]: data.data}).populate({
+            path: 'info',
+            match: { [data2.fieldName]: data2.data },
+            options: { sort: { createdAt: -1 }},
+        }).exec();
+
+        return result;
     }
 
     async findAs(data: FindAsDto): Promise<SheetStorage[]>{
@@ -39,7 +49,6 @@ export class SheetsStorageService {
     async addStorageInfo(sheetId: Schema.Types.ObjectId, storageId: Schema.Types.ObjectId): Promise<SheetStorage> {
         const sheetStorage = await this.sheetStorageModel.findById(sheetId).exec();
         if (!sheetStorage) {
-            console.log('Not found');
             return sheetStorage;
         }
         sheetStorage.info.push(storageId);

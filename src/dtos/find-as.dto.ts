@@ -3,7 +3,7 @@ import { NumberOrStringOrObjectId } from '../validators/numberOrStringOrObjectId
 import { Types } from 'mongoose';
 
 enum queries {
-    'name', 'type', 'operation', 'quantity', 'unitCost', 'balance', '_id'
+    'name', 'type', 'operation', 'quantity', 'unitCost', 'balance', '_id',
 }
 
 export class FindAsDto {
@@ -13,7 +13,6 @@ export class FindAsDto {
     @IsEnum(queries)
     fieldName: string;
 
-    @Validate(NumberOrStringOrObjectId)
     data: any;
 
     constructor(fieldName: string, data: any) {

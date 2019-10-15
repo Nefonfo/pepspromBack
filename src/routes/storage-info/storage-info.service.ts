@@ -22,10 +22,23 @@ export class StorageInfoService {
         return await this.externalSheetStorageService.findAs(data);
     }
 
+    async findOnebyRefWherePopulate(idSheetRef: Schema.Types.ObjectId, query: string, param: string): Promise<SheetStorage> {
+        const data: FindAsDto = new FindAsDto('_id', idSheetRef);
+        const data2: FindAsDto = new FindAsDto(query, param);
+        
+        return await this.externalSheetStorageService.findOneWherePopulateInfo(data, data2);
+    }
+
     async createStorageInfo(newStorageInfo: NewStorageInfoRegisterDto, idSheetRef: Schema.Types.ObjectId): Promise<StorageInfo>{
         const newStorage = new this.storageInfoModel(newStorageInfo);
         const savedStorage = await newStorage.save();
         const ref = await this.externalSheetStorageService.addStorageInfo(idSheetRef, savedStorage.id);
         return savedStorage;
+    }
+
+    async editStorageInfoExistence(newExistence: number, id: Schema.Types.ObjectId): Promise<StorageInfo> {
+        let info = await this.storageInfoModel.findById(id);
+        info.existence = newExistence;
+        return await info.save();
     }
 }

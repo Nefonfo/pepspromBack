@@ -1,4 +1,4 @@
-import { Document, Schema } from 'mongoose';
+import { Document, Schema, Types } from 'mongoose';
 const enum types {
     PEPS = 'PEPS',
     COSTOPROMEDIO = 'COSTO PROMEDIO',
@@ -6,5 +6,5 @@ const enum types {
 export interface SheetStorage extends Document {
     name: string;
     type: types;
-    info: Schema.Types.ObjectId[];
+    info: Schema.Types.ObjectId[] | any;
 }

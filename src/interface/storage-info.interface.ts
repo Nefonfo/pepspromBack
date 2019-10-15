@@ -9,7 +9,7 @@ export interface StorageInfo extends Document{
 }
 
 interface Balance {
-    quantity: number;
-    unitCost: number;
-    total: number;
+    quantity: number | null;
+    unitCost: number | null;
+    total: number | null;
 }

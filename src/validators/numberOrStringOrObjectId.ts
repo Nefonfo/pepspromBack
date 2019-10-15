@@ -6,7 +6,7 @@ import * as mongoose from 'mongoose';
 export class NumberOrStringOrObjectId implements ValidatorConstraintInterface {
 
     validate(text: string, args: ValidationArguments) {
-        return (isNumber(text) || isString(text) || mongoose.Types.ObjectId.isValid(text));
+        return true;
     }
 
     defaultMessage(args: ValidationArguments) { 
