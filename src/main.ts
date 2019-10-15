@@ -11,7 +11,7 @@ const options = {
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.enableCors(options);
-  await app.listen(3000);
+  await app.listen(process.env.PORT || 3000);
   console.log('%c SERVIDOR LEVANTADO', 'color: #00FF00');
 }
 bootstrap();
