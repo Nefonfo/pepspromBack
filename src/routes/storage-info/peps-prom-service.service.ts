@@ -159,7 +159,12 @@ export class PepsPromServiceService {
         if(newStorage.quantity > balance.quantity){
           RESPONSEJSON = null;
         } else {
-          const finalQuantity = balance.quantity - newStorage.quantity;
+          let finalQuantity = 0;
+          if (newStorage.quantity === balance.quantity){
+            finalQuantity = 0;
+          } else{
+            finalQuantity = balance.quantity - newStorage.quantity;
+          }
           const newdata: NewStorageInfoRegisterDto = new NewStorageInfoRegisterDto(
             newStorage.operation,
             newStorage.quantity,
