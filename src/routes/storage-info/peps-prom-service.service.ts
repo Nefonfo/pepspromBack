@@ -156,21 +156,26 @@ export class PepsPromServiceService {
         );
         const { info } = infoAbout;
         const { balance } = info[0];
-        const finalQuantity = balance.quantity - newStorage.quantity;
-        const newdata: NewStorageInfoRegisterDto = new NewStorageInfoRegisterDto(
-          newStorage.operation,
-          newStorage.quantity,
-          balance.unitCost,
-          newStorage.type,
-          newStorage.existence,
-          finalQuantity,
-          balance.unitCost,
-          balance.unitCost * finalQuantity,
-        );
-        RESPONSEJSON = await this.storageInfoService.createStorageInfo(
-          newdata,
-          newStorage.idRefTo,
-        );
+        if(newStorage.quantity > balance.quantity){
+          RESPONSEJSON = null;
+        } else {
+          const finalQuantity = balance.quantity - newStorage.quantity;
+          const newdata: NewStorageInfoRegisterDto = new NewStorageInfoRegisterDto(
+            newStorage.operation,
+            newStorage.quantity,
+            balance.unitCost,
+            newStorage.type,
+            newStorage.existence,
+            finalQuantity,
+            balance.unitCost,
+            balance.unitCost * finalQuantity,
+          );
+          RESPONSEJSON = await this.storageInfoService.createStorageInfo(
+            newdata,
+            newStorage.idRefTo,
+          );
+        }
+        
       }
     }
     return RESPONSEJSON;
