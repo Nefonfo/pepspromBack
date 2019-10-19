@@ -17,7 +17,7 @@ export class PepsPromServiceService {
           const dataInfoSingle = await this.storageInfoService.findOnebyRefWherePopulate(newStorage.idRefTo, null, null);
           if (typeof dataInfoSingle.info !== 'undefined' && (dataInfoSingle.info).length > 0) {
             const { info } = dataInfoSingle;
-            if(info[info.length - 1].existence === 0) {
+            if(info[info.length - 1].balance.existence === 0) {
               const newdata: NewStorageInfoRegisterDto = new NewStorageInfoRegisterDto(
                 newStorage.operation,
                 newStorage.quantity,
