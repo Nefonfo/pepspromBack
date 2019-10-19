@@ -42,6 +42,9 @@ export class StorageInfoController {
     const sheetData: SheetStorage = await this.externalSheetStorageService.findOneAsAndPopulateInfo(
       findOneDto,
     );
+    if (sheetData == null){
+      throw new HttpException('SHEET NOT FOUNDED', HttpStatus.NOT_FOUND);
+    }
     let result: StorageInfo | HttpException;
     if (sheetData.type === 'PEPS') {
       result = await this.pepsPromService.getResultPeps(

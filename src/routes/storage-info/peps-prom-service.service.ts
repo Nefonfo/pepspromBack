@@ -14,8 +14,7 @@ export class PepsPromServiceService {
   ): Promise<StorageInfo | HttpException> {
     let RESPONSEJSON: StorageInfo | HttpException;
     if(newStorage.type === 'ENTRADA'){
-          const dataInfoSingle = await this.storageInfoService.findOnebyRefWherePopulate(newStorage.idRefTo, 'type', 'ENTRADA');;
-        
+          const dataInfoSingle = await this.storageInfoService.findOnebyRefWherePopulate(newStorage.idRefTo, null, null);
           if (typeof dataInfoSingle.info !== 'undefined' && (dataInfoSingle.info).length > 0) {
             const { info } = dataInfoSingle;
             const newdata: NewStorageInfoRegisterDto = new NewStorageInfoRegisterDto(
@@ -49,7 +48,7 @@ export class PepsPromServiceService {
             );
           }
     } else {
-          const dataInfoSingle = await this.storageInfoService.findOnebyRefWherePopulate(newStorage.idRefTo, 'type', 'ENTRADA');;
+          const dataInfoSingle = await this.storageInfoService.findOnebyRefWherePopulate(newStorage.idRefTo, null, null);
           if (typeof dataInfoSingle.info !== 'undefined' && (dataInfoSingle.info).length > 0) {
             const { info } = dataInfoSingle;
             const copyOfNewStorage = {...newStorage};
