@@ -17,20 +17,37 @@ export class PepsPromServiceService {
           const dataInfoSingle = await this.storageInfoService.findOnebyRefWherePopulate(newStorage.idRefTo, null, null);
           if (typeof dataInfoSingle.info !== 'undefined' && (dataInfoSingle.info).length > 0) {
             const { info } = dataInfoSingle;
-            const newdata: NewStorageInfoRegisterDto = new NewStorageInfoRegisterDto(
-              newStorage.operation,
-              newStorage.quantity,
-              newStorage.unitCost,
-              newStorage.type,
-              newStorage.existence,
-              (newStorage.quantity + info[info.length - 1].balance.quantity),
-              0,
-              (info[info.length - 1].balance.total + (newStorage.unitCost * newStorage.quantity))
-            );
-            RESPONSEJSON = await this.storageInfoService.createStorageInfo(
-              newdata,
-              newStorage.idRefTo,
-            );
+            if(info[info.length - 1].existence === 0) {
+              const newdata: NewStorageInfoRegisterDto = new NewStorageInfoRegisterDto(
+                newStorage.operation,
+                newStorage.quantity,
+                newStorage.unitCost,
+                newStorage.type,
+                newStorage.existence,
+                newStorage.quantity,
+                newStorage.unitCost,
+                newStorage.quantity * newStorage.unitCost,
+              );
+              RESPONSEJSON = await this.storageInfoService.createStorageInfo(
+                newdata,
+                newStorage.idRefTo,
+              );
+            } else{
+              const newdata: NewStorageInfoRegisterDto = new NewStorageInfoRegisterDto(
+                newStorage.operation,
+                newStorage.quantity,
+                newStorage.unitCost,
+                newStorage.type,
+                newStorage.existence,
+                (newStorage.quantity + info[info.length - 1].balance.quantity),
+                0,
+                (info[info.length - 1].balance.total + (newStorage.unitCost * newStorage.quantity))
+              );
+              RESPONSEJSON = await this.storageInfoService.createStorageInfo(
+                newdata,
+                newStorage.idRefTo,
+              );
+            }
           } else {
             const newdata: NewStorageInfoRegisterDto = new NewStorageInfoRegisterDto(
               newStorage.operation,
