@@ -18,6 +18,7 @@ import { SheetStorage } from '../../interface/sheet-storage.interface';
 import { StorageInfoService } from './storage-info.service';
 import { NewStorageInfoRegisterDto } from '../../dtos/new-storage-info-register.dto';
 import { PepsPromServiceService } from './peps-prom-service.service';
+import { StorageInfo } from 'src/interface/storage-info.interface';
 enum types {
   'PEPS',
   'COSTO PROMEDIO',
@@ -41,34 +42,22 @@ export class StorageInfoController {
     const sheetData: SheetStorage = await this.externalSheetStorageService.findOneAsAndPopulateInfo(
       findOneDto,
     );
+    let result: StorageInfo | HttpException;
     if (sheetData.type === 'PEPS') {
-      const result = await this.pepsPromService.getResultPeps(
+      result = await this.pepsPromService.getResultPeps(
         newStorage,
-        sheetData,
       );
-
-      if (result != null) {
-        return response.status(HttpStatus.CREATED).json(result);
-      } else {
-        throw new HttpException(
-          'PARAMETROS INVALIDOS',
-          HttpStatus.NOT_ACCEPTABLE,
-        );
-      }
     } else {
-      const result = await this.pepsPromService.getResultProm(
+      result = await this.pepsPromService.getResultProm(
         newStorage,
         sheetData,
       );
+    }
 
-      if (result != null) {
-        return response.status(HttpStatus.CREATED).json(result);
-      } else {
-        throw new HttpException(
-          'PARAMETROS INVALIDOS',
-          HttpStatus.NOT_ACCEPTABLE,
-        );
-      }
+    if (result instanceof HttpException) {
+      throw result;
+    } else {
+      return response.status(HttpStatus.OK).json(result);
     }
   }
 }

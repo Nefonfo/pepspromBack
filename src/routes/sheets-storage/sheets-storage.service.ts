@@ -26,17 +26,18 @@ export class SheetsStorageService {
         return await this.sheetStorageModel.findOne({[data.fieldName]: data.data}).populate('info').exec();
     }
     async findOneAsAndPopulateInfo(data: FindAsDto): Promise<SheetStorage>{
-        return await this.sheetStorageModel.findOne({[data.fieldName]: data.data}).populate({
+        const res = await this.sheetStorageModel.findOne({[data.fieldName]: data.data}).populate({
             path: 'info',
-            options: { sort: { createdAt: -1 }},
+            options: { sort: { createdAt: 1 }},
         }).exec();
+        return res;
     }
 
     async findOneWherePopulateInfo(data: FindAsDto, data2: FindAsDto): Promise<SheetStorage>{
         const result = await this.sheetStorageModel.findOne({[data.fieldName]: data.data}).populate({
             path: 'info',
             match: { [data2.fieldName]: data2.data },
-            options: { sort: { createdAt: -1 }},
+            options: { sort: { createdAt: 1 }},
         }).exec();
 
         return result;

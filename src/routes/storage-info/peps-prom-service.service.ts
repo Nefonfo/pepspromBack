@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { NewStorageInfoDto } from '../../dtos/new-storage-info.dto';
 import { StorageInfoService } from './storage-info.service';
 import { NewStorageInfoRegisterDto } from '../../dtos/new-storage-info-register.dto';
@@ -11,87 +11,89 @@ export class PepsPromServiceService {
 
   async getResultPeps(
     newStorage: NewStorageInfoDto,
-    sheetData: SheetStorage,
-  ): Promise<StorageInfo | null> {
-    let RESPONSEJSON: StorageInfo | null;
-
-    if (newStorage.type === 'ENTRADA') {
-      // tslint:disable-next-line: prefer-const
-      const newdata: NewStorageInfoRegisterDto = new NewStorageInfoRegisterDto(
-        newStorage.operation,
-        newStorage.quantity,
-        newStorage.unitCost,
-        newStorage.type,
-        newStorage.existence,
-        newStorage.quantity,
-        newStorage.unitCost,
-        newStorage.quantity * newStorage.unitCost,
-      );
-      RESPONSEJSON = await this.storageInfoService.createStorageInfo(
-        newdata,
-        newStorage.idRefTo,
-      );
-    } else {
-      if (sheetData.info[0] == null) {
-        RESPONSEJSON = null;
-      } else {
-        const copyNewStorage = { ...newStorage };
-        let { existence } = copyNewStorage;
-        const data = await this.storageInfoService.findOnebyRefWherePopulate(
-          copyNewStorage.idRefTo,
-          'type',
-          'ENTRADA',
-        );
-        const { info } = data;
-        let totalExistence = 0;
-        let totalPrice = 0;
-        for (const dataInfo of info) {
-          totalExistence = totalExistence + dataInfo.existence;
-        }
-        if (totalExistence >= existence) {
-          for (const dataInfo of info) {
-            if (existence > 0 && dataInfo.existence !== 0) {
-              if (dataInfo.existence >= existence) {
-                existence = (existence - dataInfo.existence) * -1;
-                totalPrice =
-                  totalPrice +
-                  (dataInfo.existence - existence) * dataInfo.unitCost;
-                await this.storageInfoService.editStorageInfoExistence(
-                  existence,
-                  dataInfo._id,
-                );
-              } else {
-                totalPrice =
-                  totalPrice + dataInfo.unitCost * dataInfo.existence;
-                existence = existence - dataInfo.existence;
-                await this.storageInfoService.editStorageInfoExistence(
-                  0,
-                  dataInfo._id,
-                );
-              }
-            } else {
-              break;
-            }
+  ): Promise<StorageInfo | HttpException> {
+    let RESPONSEJSON: StorageInfo | HttpException;
+    if(newStorage.type === 'ENTRADA'){
+          const dataInfoSingle = await this.storageInfoService.findOnebyRefWherePopulate(newStorage.idRefTo, 'type', 'ENTRADA');;
+        
+          if (typeof dataInfoSingle.info !== 'undefined' && (dataInfoSingle.info).length > 0) {
+            const { info } = dataInfoSingle;
+            const newdata: NewStorageInfoRegisterDto = new NewStorageInfoRegisterDto(
+              newStorage.operation,
+              newStorage.quantity,
+              newStorage.unitCost,
+              newStorage.type,
+              newStorage.existence,
+              (newStorage.quantity + info[info.length - 1].balance.quantity),
+              0,
+              (info[info.length - 1].balance.total + (newStorage.unitCost * newStorage.quantity))
+            );
+            RESPONSEJSON = await this.storageInfoService.createStorageInfo(
+              newdata,
+              newStorage.idRefTo,
+            );
+          } else {
+            const newdata: NewStorageInfoRegisterDto = new NewStorageInfoRegisterDto(
+              newStorage.operation,
+              newStorage.quantity,
+              newStorage.unitCost,
+              newStorage.type,
+              newStorage.existence,
+              newStorage.quantity,
+              newStorage.unitCost,
+              newStorage.quantity * newStorage.unitCost,
+            );
+            RESPONSEJSON = await this.storageInfoService.createStorageInfo(
+              newdata,
+              newStorage.idRefTo,
+            );
           }
-          const newData: NewStorageInfoRegisterDto = new NewStorageInfoRegisterDto(
-            newStorage.operation,
-            newStorage.quantity,
-            0,
-            newStorage.type,
-            newStorage.existence,
-            newStorage.existence,
-            0,
-            totalPrice,
-          );
-
-          RESPONSEJSON = await this.storageInfoService.createStorageInfo(
-            newData,
-            newStorage.idRefTo,
-          );
-        } else {
-          RESPONSEJSON = null;
-        }
-      }
+    } else {
+          const dataInfoSingle = await this.storageInfoService.findOnebyRefWherePopulate(newStorage.idRefTo, 'type', 'ENTRADA');;
+          if (typeof dataInfoSingle.info !== 'undefined' && (dataInfoSingle.info).length > 0) {
+            const { info } = dataInfoSingle;
+            const copyOfNewStorage = {...newStorage};
+            let {existence} = copyOfNewStorage;
+            let sumaDeCobro = 0;
+            const sumaExistencia = info[info.length - 1].balance.quantity;
+            if (sumaExistencia >= newStorage.quantity) {
+              for (const data of info) {
+                let newDataExistence = 0;
+                if (existence !== 0) {
+                  if (data.existence >= existence) {
+                    newDataExistence = data.existence - existence;
+                    sumaDeCobro = sumaDeCobro + (existence * data.unitCost);
+                    existence = 0;
+                  } else if ((data.existence < existence) && data.existence !== 0) {
+                    newDataExistence = 0;
+                    sumaDeCobro = sumaDeCobro + (data.existence * data.unitCost);
+                    existence = existence - data.existence;
+                  }
+                } else {
+                  break;
+                }
+                await this.storageInfoService.editStorageInfoExistence(newDataExistence, data.id);
+              }
+              const newdata: NewStorageInfoRegisterDto = new NewStorageInfoRegisterDto(
+                newStorage.operation,
+                newStorage.quantity,
+                newStorage.unitCost,
+                newStorage.type,
+                newStorage.existence,
+                (sumaExistencia - newStorage.quantity),
+                0,
+                sumaDeCobro,
+              );
+              RESPONSEJSON = await this.storageInfoService.createStorageInfo(
+                newdata,
+                newStorage.idRefTo,
+              );
+            } else {
+              RESPONSEJSON = new HttpException('CANTIDAD NO SOPORTADA CON LA EXISTENCIA', HttpStatus.PRECONDITION_FAILED);
+            }
+          } else {
+            RESPONSEJSON = new HttpException('TIENE QUE HABER ANTES UNA SALIDA', HttpStatus.NOT_ACCEPTABLE);
+          }
     }
     return RESPONSEJSON;
   }
@@ -99,8 +101,8 @@ export class PepsPromServiceService {
   async getResultProm(
     newStorage: NewStorageInfoDto,
     sheetData: SheetStorage,
-  ): Promise<StorageInfo | null> {
-    let RESPONSEJSON: StorageInfo | null;
+  ): Promise<StorageInfo | HttpException> {
+    let RESPONSEJSON: StorageInfo | HttpException;
     if (newStorage.type === 'ENTRADA') {
       if (sheetData.info[0] == null) {
         const newdata: NewStorageInfoRegisterDto = new NewStorageInfoRegisterDto(
@@ -147,7 +149,7 @@ export class PepsPromServiceService {
       }
     } else {
       if (sheetData.info[0] == null) {
-        RESPONSEJSON = null;
+        RESPONSEJSON = new HttpException('ENTRADA ANTES QUE SALIDA', HttpStatus.NOT_ACCEPTABLE);
       } else {
         const infoAbout = await this.storageInfoService.findOnebyRefWherePopulate(
           newStorage.idRefTo,
@@ -156,11 +158,9 @@ export class PepsPromServiceService {
         );
         const { info } = infoAbout;
         const { balance } = info[0];
-        if(newStorage.quantity > balance.quantity){
-          RESPONSEJSON = null;
+        if(newStorage.quantity > balance.quantity) {
+          RESPONSEJSON = new HttpException('CANTIDAD NO SOPORTADA CON LA EXISTENCIA', HttpStatus.PRECONDITION_FAILED);
         } else {
-          console.log(infoAbout);
-          console.log(`${balance.quantity} - ${newStorage.quantity}`);
           const finalQuantity = balance.quantity - newStorage.quantity;
           const newdata: NewStorageInfoRegisterDto = new NewStorageInfoRegisterDto(
             newStorage.operation,
@@ -177,7 +177,6 @@ export class PepsPromServiceService {
             newStorage.idRefTo,
           );
         }
-        
       }
     }
     return RESPONSEJSON;
